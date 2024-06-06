@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/ccxnu/ips-redis-mysql/config"
@@ -18,9 +19,7 @@ func SaveToDatabase(data *model.IPData) error {
 	defer db.Close()
 
 	querySearh := `SELECT ip FROM GeoData WHERE ip = ?`
-	row := db.QueryRow(querySearh, data.IP)
-
-	if row != nil {
+	if err := db.QueryRow(querySearh, data.IP).Scan(); err != sql.ErrNoRows {
 		log.Printf("IP %s already exists in the database", data.IP)
 		return nil
 	}
@@ -36,6 +35,5 @@ func SaveToDatabase(data *model.IPData) error {
 		return err
 	}
 
-	db.Close()
 	return nil
 }

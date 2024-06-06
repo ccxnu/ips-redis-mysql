@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -69,6 +70,13 @@ func (s *RedisService) handleDataFetch() error {
 			value, err := util.StringToJson[model.IPValue](val)
 			if err != nil {
 				log.Fatalf("Failed to parse value info: %v", err)
+			}
+
+			// Vericate if the ip is a ip4 valid address
+			isValidIp := util.ValidateIP4(value.IP)
+			if !isValidIp {
+				log.Fatalf("Invalid IP address: %s", value.IP)
+				continue
 			}
 
 			// Fetch and process IP info here

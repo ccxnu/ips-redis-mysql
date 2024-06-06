@@ -12,7 +12,7 @@ func ValidateIP4(ip string) bool {
 	}
 	if ipAddress.To4() == nil {
 		return false
+	} else {
+		return true
 	}
-
-	return true
 }

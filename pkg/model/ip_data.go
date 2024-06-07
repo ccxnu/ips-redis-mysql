@@ -1,6 +1,8 @@
 package model
 
 type IPData struct {
+	Status      string  `json:"status"`
+	Message     string  `json:"message"`
 	IP          string  `json:"ip"`
 	Country     string  `json:"country"`
 	CountryCode string  `json:"countryCode"`

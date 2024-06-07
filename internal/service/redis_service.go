@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"time"
 
@@ -69,13 +68,14 @@ func (s *RedisService) handleDataFetch() error {
 
 			value, err := util.StringToJson[model.IPValue](val)
 			if err != nil {
-				log.Fatalf("Failed to parse value info: %v", err)
+				log.Printf("Failed to parse value info: %v", err)
+				continue
 			}
 
 			// Vericate if the ip is a ip4 valid address
 			isValidIp := util.ValidateIP4(value.IP)
 			if !isValidIp {
-				log.Fatalf("Invalid IP address: %s", value.IP)
+				log.Printf("Invalid IP address: %s", value.IP)
 				continue
 			}
 
@@ -108,19 +108,29 @@ func (s *RedisService) handleDataFetch() error {
 			}
 
 			// Save data to database
-			err = SaveToDatabase(newData)
+			ipExist, err := SaveToDatabase(newData)
 
 			if err != nil {
-				log.Fatalf("Error saving data to database: %s", err)
+				log.Printf("Error saving data to database: %s", err)
+				continue
+			}
+
+			if ipExist {
+				log.Printf("IP %s already exists in the database", value.IP)
+				err = rdb.Del(ctx, key).Err()
 				continue
 			}
 
 			// Delete key from Redis
-			/*err = rdb.Del(ctx, key).Err()
+			err = rdb.Del(ctx, key).Err()
 			if err != nil {
-				log.Fatalf("Error deleting key from Redis: %s", err)
+				log.Printf("Error deleting key from Redis: %s", err)
 				continue
-			}*/
+			}
+
+			// Wait 2ms for the next request
+			time.Sleep(2 * time.Millisecond)
+
 		}
 		return nil
 	}
@@ -142,6 +152,11 @@ func (s *RedisService) FetchApiInfo(ip string) (*model.IPData, error) {
 	data, err := util.BodyToJson[model.IPData](body)
 	if err != nil {
 		log.Fatalf("Failed to parse value info: %v", err)
+	}
+
+	if data.Status == "fail" {
+		log.Printf("Error fetching IP %s: %v", ip, data.Message)
+		return nil, err
 	}
 
 	return data, nil

@@ -8,9 +8,9 @@ import (
 
 type Config struct {
 	Redis struct {
-		Host string
-		Port int
-		Url  string
+		//Host string
+		//Port int
+		Url string
 	}
 	Database struct {
 		User     string
@@ -35,8 +35,8 @@ func InitConfig() {
 
 	viper.AutomaticEnv()
 
-	AppConfig.Redis.Host = viper.GetString("REDIS_HOST")
-	AppConfig.Redis.Port = viper.GetInt("REDIS_PORT")
+	//AppConfig.Redis.Host = viper.GetString("REDIS_HOST")
+	//AppConfig.Redis.Port = viper.GetInt("REDIS_PORT")
 	AppConfig.Redis.Url = viper.GetString("REDIS_URL")
 
 	AppConfig.Database.User = viper.GetString("DB_USER")
